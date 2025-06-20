@@ -12,7 +12,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     password: DataTypes.STRING,
     resetToken: DataTypes.STRING,
-    resetTokenExpiry: DataTypes.DATE
+    resetTokenExpiry: DataTypes.DATE,
+    image:DataTypes.STRING,
+    phone:DataTypes.NUMBER,
   }, {
     sequelize,
     modelName: 'User',

@@ -4,6 +4,7 @@
     const db = require('../../database/db');
 
     const sendEmail = require('../../helpers/sendEmail');
+    const customResponse = require('../../helpers/response');
 
     const userRepository = new UserRepository(db);
     const authService = new AuthService(userRepository);
@@ -15,9 +16,11 @@
         try {
             const { name, password, email } = req.body;
             const userId = await authService.register(name, password, email);
-            res.status(201).json({ success: true, userId });
+            // res.status(201).json({ success: true, userId });
+            return customResponse.success(res, { userId }, "User registered successfully", 201);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            // res.status(500).json({ message: error.message });
+            return customResponse.error(res, error);
         }
     };
 
@@ -25,28 +28,43 @@
         try {
             const { email, password } = req.body;
             const token = await authService.login(email, password);
-            res.json({ token });
+            // res.json({ token });
+            return customResponse.success(res, { token }, "User Loggedin successfully", 200);
         } catch (error) {
-            res.status(401).json({ message: error.message });
+            // res.status(401).json({ message: error.message });
+            return customResponse.error(res, error);
         }
     };
 
     exports.getAllUsers = async (req, res) => {
         try {
             const users = await authService.getAllUsers();
-            res.json({ users });
+            // res.json({ users });
+            return customResponse.success(res, { users });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            // res.status(500).json({ message: error.message });
+            return customResponse.error(res, error);
         }
     };
 
     exports.updateUser = async (req, res) => {
         try {
+            // console.log(req.body);
             const userId = req.user.userId;
-            const updated = await authService.updateUser(userId, req.body);
-            res.json({ success: true });
+            const token = req.token;
+            const { phone } = req.body;
+            const image = req.file ? req.file.filename : null;
+            const data = {};
+            if (phone) data.phone = phone;
+            if (image) data.image = image;
+            
+            await authService.updateUser(userId, data);
+            // res.json({ success: true })
+            
+            return customResponse.success(res, { token }, "profile updated successfully", 200);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            // res.status(500).json({ message: error.message });
+            return customResponse.error(res, error);
         }
     };
 
@@ -60,7 +78,8 @@
                 req.token = token;
                 next();
             } catch (error) {
-                res.status(403).json({ message: error.message });
+                // res.status(403).json({ message: error.message });
+                return customResponse.error(res, error);
             }
         } else {
             res.sendStatus(401);
@@ -109,9 +128,11 @@
                         <a href="${resetLink}">${resetLink}</a>`;
             await sendEmail(email, 'Reset your password', html);
 
-            res.json({ success: true, message: "Reset link sent if email exists." });
+            // res.json({ success: true, message: "Reset link sent if email exists." });
+            return customResponse.success(res, {} ,"Reset link sent if email exists", 200);
         } catch (err) {
-            res.status(500).json({ message: err.message });
+            // res.status(500).json({ message: err.message });
+            return customResponse.error(res, error);
         }
     };
 
@@ -120,9 +141,11 @@
             const { token } = req.params;
             const { password } = req.body;
             await authService.resetPassword(token, password);
-            res.json({ success: true, message: "Password reset successful." });
+            // res.json({ success: true, message: "Password reset successful." });
+            return customResponse.success(res, {} ,"Password reset successful.", 200);
         } catch (err) {
-            res.status(400).json({ message: err.message });
+            // res.status(400).json({ message: err.message });
+            return customResponse.error(res, error);
         }
     };
 
