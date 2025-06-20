@@ -10,6 +10,8 @@ router.post('/logout', authController.authenticateJWT, authController.logout);
 
 router.get('/dashboard', authController.authenticateJWT, authController.dashboard);
 
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password/:token', authController.resetPassword);
 
 
 module.exports = router;
