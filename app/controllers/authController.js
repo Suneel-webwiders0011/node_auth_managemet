@@ -3,8 +3,13 @@
     const UserRepository = require('../repositories/userRepository');
     const db = require('../../database/db');
 
+    const sendEmail = require('../../helpers/sendEmail');
+
     const userRepository = new UserRepository(db);
     const authService = new AuthService(userRepository);
+
+    // const user = await userRepository.findById(1);
+    // const userList = await userRepository.getAllUsers();
 
     exports.register = async (req, res) => {
         try {
@@ -94,3 +99,30 @@
             user: req.user // Contains decoded JWT payload
         });
     };
+
+    exports.forgotPassword = async (req, res) => {
+        try {
+            const { email } = req.body;
+            const token = await authService.requestPasswordReset(email);
+            const resetLink = `http://localhost:5000/users/reset-password/${token}`;
+            const html = `<p>Click the link below to reset your password:</p>
+                        <a href="${resetLink}">${resetLink}</a>`;
+            await sendEmail(email, 'Reset your password', html);
+
+            res.json({ success: true, message: "Reset link sent if email exists." });
+        } catch (err) {
+            res.status(500).json({ message: err.message });
+        }
+    };
+
+    exports.resetPassword = async (req, res) => {
+        try {
+            const { token } = req.params;
+            const { password } = req.body;
+            await authService.resetPassword(token, password);
+            res.json({ success: true, message: "Password reset successful." });
+        } catch (err) {
+            res.status(400).json({ message: err.message });
+        }
+    };
+
