@@ -15,6 +15,8 @@ module.exports = (sequelize, DataTypes) => {
     resetTokenExpiry: DataTypes.DATE,
     image:DataTypes.STRING,
     phone:DataTypes.NUMBER,
+    file_path:DataTypes.STRING,
+    user_type:DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'User',

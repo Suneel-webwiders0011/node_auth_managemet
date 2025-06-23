@@ -1,26 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../app/controllers/authController');
-
-const { registerValidation , loginValidation, forgotPasswordValidation} = require('../validators/authValidator');
+const userController = require('../app/controllers/userController');
+const { registerValidation, loginValidation, forgotPasswordValidation } = require('../validators/authValidator');
 const validate = require('../app/middleware/validate');
 const upload = require('../app/middleware/upload');
 
+// Grouped route for "/users"
+router
+  .route('/')
+  .get(userController.authenticateJWT, userController.getAllUsers)         // GET /users
+  .post(registerValidation, validate, userController.register)             // POST /users
+  .put(userController.authenticateJWT, upload.single('image'), userController.updateUser) // PUT /users
+  .delete(userController.authenticateJWT, userController.logout);          // DELETE /users
 
-router.post('/register', registerValidation, validate, authController.register);
-
-router.post('/login', loginValidation, validate, authController.login);
-
-router.get('/', authController.authenticateJWT, authController.getAllUsers);
-
-router.put('/update', authController.authenticateJWT, upload.single('image'), authController.updateUser);
-
-router.post('/logout', authController.authenticateJWT, authController.logout);
-
-router.get('/dashboard', authController.authenticateJWT, authController.dashboard);
-
-router.post('/forgot-password', forgotPasswordValidation, validate, authController.forgotPassword);
-router.post('/reset-password/:token', authController.resetPassword);
-
+// Auth-specific routes
+router.post('/login', loginValidation, validate, userController.login);
+router.get('/dashboard', userController.authenticateJWT, userController.dashboard);
+router.post('/forgot-password', forgotPasswordValidation, validate, userController.forgotPassword);
+router.post('/reset-password/:token', userController.resetPassword);
+router.get('/filter', userController.authenticateJWT, userController.filterUsers);
 
 module.exports = router;
