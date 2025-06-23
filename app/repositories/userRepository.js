@@ -1,88 +1,80 @@
-const BaseRepository = require('./BaseRepository');
+// repositories/UserRepository.js
+const IUserRepository = require('./IUserRepository');
+const { Op } = require('sequelize');
 
-// class UserRepository {
-//   constructor(models) {
-//     this.User = models.User;
-//   }
-
-//   async findByUsername(email) {
-//     return await this.User.findOne({ where: { email } });
-//   }
-
-//   async getAllUsers() {
-//     return await this.User.findAll({ attributes: ['id', 'name', 'email'] });
-//   }
-
-//   async createUser(name, password, email) {
-//     const user = await this.User.create({ name, password, email });
-//     return user.id;
-//   }
-
-//   async updateUser(userId, data) {
-//     await this.User.update(data, { where: { id: userId } });
-//     return true;
-//   }
-
-//   async saveResetToken(userId, token, expiry) {
-//     return this.User.update({ resetToken: token, resetTokenExpiry: expiry }, { where: { id: userId } });
-//   }
-
-//   async findByResetToken(token) {
-//     return await this.User.findOne({ where: { resetToken: token } });
-//   }
-
-//   async updatePasswordAndClearReset(userId, hashedPassword) {
-//     return this.User.update(
-//       { password: hashedPassword, resetToken: null, resetTokenExpiry: null },
-//       { where: { id: userId } }
-//     );
-//   }
-
-// }
-
-
-
-class UserRepository extends BaseRepository {
-  constructor(models) {
-    super(models.User); // Pass the Sequelize model to the base class
-    this.models = models; // optional, if you need access to other models
+class UserRepository extends IUserRepository {
+  /**
+   * Initializes the repository with a database connection.
+   * @param {Object} db - Sequelize instance containing models.
+   */
+  constructor(db) {
+    super();
+    this.db = db;
   }
 
-  async findByUsername(email) {
-    return this.findByCondition({ email });
+  /**
+   * Retrieves a user by primary key (ID).
+   * @param {number} id - User ID.
+   * @returns {Promise<Object|null>} User instance or null if not found.
+   */
+  async getUserById(id) {
+    return this.db.User.findByPk(id);
   }
 
+  /**
+   * Finds a user by email.
+   * @param {string} email - Email address to search.
+   * @returns {Promise<Object|null>} User instance or null.
+   */
+  async findByOne(email) {
+    return this.db.User.findOne({ where: { email } });
+  }
+
+  /**
+   * Creates a new user with the provided data.
+   * @param {Object} data - User attributes to create.
+   * @returns {Promise<Object>} Created user instance.
+   */
+  async createUser(data) {
+    return this.db.User.create(data);
+  }
+
+  /**
+   * Updates a user's information by ID.
+   * @param {number} id - User ID.
+   * @param {Object} data - Fields to update.
+   * @returns {Promise<Array>} Update result (usually [affectedRows]).
+   */
+  async updateUser(id, data) {
+    return this.db.User.update(data, { where: { id } });
+  }
+
+  /**
+   * Fetches all users from the database.
+   * @returns {Promise<Array>} List of user instances.
+   */
   async getAllUsers() {
-    return this.findAll(['id', 'name', 'email']);
+    return await this.db.User.findAll(); 
   }
 
-  async createUser(name, password, email) {
-    const user = await this.create({ name, password, email });
-    return user.id;
-  }
-
-  async updateUser(userId, data) {
-    await this.update(userId, data);
-    return true;
-  }
-
-  async saveResetToken(userId, token, expiry) {
-    return this.update(userId, {
-      resetToken: token,
-      resetTokenExpiry: expiry,
-    });
-  }
-
-  async findByResetToken(token) {
-    return this.findByCondition({ resetToken: token });
-  }
-
-  async updatePasswordAndClearReset(userId, hashedPassword) {
-    return this.update(userId, {
-      password: hashedPassword,
-      resetToken: null,
-      resetTokenExpiry: null,
-    });
+  /**
+   * Filters users based on optional parameters: name, email, and user_type.
+   * Supports partial matches for name and email using LIKE.
+   * @param {Object} filters - { name?: string, email?: string, user_type?: string }
+   * @returns {Promise<Array>} List of filtered users.
+   */
+  async filterUsers(filters) {
+    const whereClause = {};
+    if (filters.name) {
+      whereClause.name = { [Op.like]: `%${filters.name}%` };
+    }
+    if (filters.email) {
+      whereClause.email = { [Op.like]: `%${filters.email}%` };
+    }
+    if (filters.user_type) {
+      whereClause.user_type = filters.user_type;
+    }
+    return await this.db.User.findAll({ where: whereClause });
   }
 }
 

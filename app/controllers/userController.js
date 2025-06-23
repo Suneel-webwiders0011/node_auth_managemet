@@ -1,17 +1,17 @@
     //controllers/authController.js
-    const AuthService = require('../services/authService');
-    const AuthRepository = require('../repositories/AuthRepository');
+    const UserService = require('../services/userService');
+    const UserRepository = require('../repositories/UserRepository');
     const db = require('../../database/db');
 
     const sendEmail = require('../../helpers/sendEmail');
     const customResponse = require('../../helpers/response');
 
-    const authRepository = new AuthRepository(db);
-    const authService = new AuthService(authRepository);
+    const userRepository = new UserRepository(db);
+    const userService = new UserService(userRepository);
 
     // const user = await authRepository.findById(1);
     // const userList = await authRepository.getAllUsers();
-    
+
     /**
      * Register a new user.
      * @route POST /users
@@ -21,8 +21,8 @@
      */
     exports.register = async (req, res) => {
         try {
-            const { name, password, email } = req.body;
-            const userId = await authService.register(name, password, email);
+            const { name,email,phone,user_type,password } = req.body;
+            const userId = await userService.register(name,email,phone,user_type,password);
             // res.status(201).json({ success: true, userId });
             return customResponse.success(res, { userId }, "User registered successfully", 201);
         } catch (error) {
@@ -41,7 +41,7 @@
     exports.login = async (req, res) => {
         try {
             const { email, password } = req.body;
-            const token = await authService.login(email, password);
+            const token = await userService.login(email, password);
             // res.json({ token });
             return customResponse.success(res, { token }, "User Loggedin successfully", 200);
         } catch (error) {
@@ -59,7 +59,7 @@
      */
     exports.getAllUsers = async (req, res) => {
         try {
-            const users = await authService.getAllUsers();
+            const users = await userService.getAllUsers();
             // res.json({ users });
             return customResponse.success(res, { users });
         } catch (error) {
@@ -82,15 +82,15 @@
             console.log(req.body);
             const userId = req.user.userId;
             const token = req.token;
+            const { name } = req.body;
             const { phone } = req.body;
-            const { file_path } = req.body;
             const image = req.file ? req.file.filename : null;
             const data = {};
+            if (name) data.name = name;
             if (phone) data.phone = phone;
             if (image) data.image = image;
-            if (file_path) data.file_path = file_path;
             
-            await authService.updateUser(userId, data);
+            await userService.updateUser(userId, data);
             // res.json({ success: true })
             
             return customResponse.success(res, { token }, "profile updated successfully", 200);
@@ -99,6 +99,7 @@
             return customResponse.error(res, error);
         }
     };
+
 
     /**
      * Middleware to authenticate JWT token.
@@ -112,7 +113,7 @@
 
             const token = authHeader.split(' ')[1];
             try {
-                req.user = authService.verifyToken(token);
+                req.user = userService.verifyToken(token);
                 req.token = token;
                 next();
             } catch (error) {
@@ -165,7 +166,7 @@
             user: req.user // Contains decoded JWT payload
         });
     };
-    
+
     /**
      * Send password reset link to user’s email.
      * @route POST /users/forgot-password
@@ -176,7 +177,7 @@
     exports.forgotPassword = async (req, res) => {
         try {
             const { email } = req.body;
-            const token = await authService.requestPasswordReset(email);
+            const token = await userService.requestPasswordReset(email);
             const resetLink = `http://localhost:5000/users/reset-password/${token}`;
             const html = `<p>Click the link below to reset your password:</p>
                         <a href="${resetLink}">${resetLink}</a>`;
@@ -202,7 +203,7 @@
         try {
             const { token } = req.params;
             const { password } = req.body;
-            await authService.resetPassword(token, password);
+            await userService.resetPassword(token, password);
             // res.json({ success: true, message: "Password reset successful." });
             return customResponse.success(res, {} ,"Password reset successful.", 200);
         } catch (err) {
@@ -210,4 +211,23 @@
             return customResponse.error(res, error);
         }
     };
+
+    /**
+     * Filter users by optional query parameters.
+     * @route GET /users/filter
+     * @param {Object} req.query - optional { name, email, user_type }
+     * @param {Object} res
+     * @returns {200} { success, data: { users } }
+     */
+    exports.filterUsers = async (req, res) => {
+        try {
+            const { name, email, user_type } = req.query;
+            const users = await userService.filterUsers({ name, email, user_type });
+            return customResponse.success(res, { users });
+        } catch (error) {
+            return customResponse.error(res, error);
+        }
+    };
+
+
 
