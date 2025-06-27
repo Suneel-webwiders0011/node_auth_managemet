@@ -154,7 +154,6 @@ const { now } = require('sequelize/lib/utils');
         }
     }
 
-    // postController.js
     exports.getPostWithComments = async (req, res) => {
         try {
             const postId = req.params.id;
@@ -175,6 +174,16 @@ const { now } = require('sequelize/lib/utils');
             return customResponse.error(res, error);
         }
     };
+
+    exports.getAllPosts = async (req, res) => {
+        try {
+            const posts = await postService.getAllPosts();
+            return customResponse.success(res, { posts });
+        } catch (error) {
+            return customResponse.error(res, error);
+        }
+    };
+    
 
 
 

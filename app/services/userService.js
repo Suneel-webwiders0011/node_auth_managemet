@@ -55,8 +55,8 @@ class UserService {
    * Retrieves all users from the repository.
    * @returns {Array} List of users.
    */
-  async getAllUsers() {
-    return await this.userRepository.getAllUsers();
+  async getAllUsers(user_type) {
+    return await this.userRepository.getAllUsers(user_type);
   }
 
   /**

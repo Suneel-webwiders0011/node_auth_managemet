@@ -53,8 +53,8 @@ class UserRepository extends IUserRepository {
    * Fetches all users from the database.
    * @returns {Promise<Array>} List of user instances.
    */
-  async getAllUsers() {
-    return await this.db.User.findAll(); 
+  async getAllUsers(user_type) {
+    return await this.db.User.findAll({ where: {'user_type': user_type} }); 
   }
 
   /**

@@ -94,12 +94,11 @@ class PostRepository extends IPostRepository{
     return await this.db.Posts.findAll({ where: whereClause });
   }
 
-  // postRepository.js
   async getPostWithComments(postId) {
     return await this.db.Posts.findByPk(postId, {
       include: [
         {
-          model: this.db.Comments,
+          model: this.db.Comment,
           as: 'comments',
           include: [
             {
@@ -114,7 +113,7 @@ class PostRepository extends IPostRepository{
   }
 
   async createComment(commentData) {
-    return await this.db.Comments.create(commentData);
+    return await this.db.Comment.create(commentData);
   }
 
 

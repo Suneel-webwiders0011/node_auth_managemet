@@ -92,6 +92,10 @@ class PostService {
     });
   }
 
+  async getAllPosts() {
+    return await this.postRepository.getAllPosts();
+  }
+
 
 
 }

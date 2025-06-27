@@ -34,6 +34,14 @@ db.sequelize = sequelize;
 
 db.User = require('../models/user')(sequelize, Sequelize.DataTypes);
 db.Posts = require('../models/posts')(sequelize, Sequelize.DataTypes);
-db.Comments = require('../models/Comment')(sequelize, Sequelize.DataTypes);
+db.Comment = require('../models/Comment')(sequelize, Sequelize.DataTypes);
+db.Plans = require('../models/plan')(sequelize, Sequelize.DataTypes);
+db.PlanPurchases = require('../models/planpurchase')(sequelize, Sequelize.DataTypes);
+
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
 
 module.exports = db;
