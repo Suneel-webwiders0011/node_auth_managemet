@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../app/controllers/authController');
+const userController = require('../app/controllers/userController');
+const postController = require('../app/controllers/postController');
 
 const { registerValidation , loginValidation, forgotPasswordValidation} = require('../validators/authValidator');
 const validate = require('../app/middleware/validate');
@@ -20,19 +22,8 @@ router.get('/dashboard', authController.authenticateJWT, authController.dashboar
 router.post('/forgot-password', forgotPasswordValidation, validate, authController.forgotPassword);
 router.post('/reset-password/:token', authController.resetPassword);
 
-// Step 1: Extract path from multipart request using Busboy
-// router.put('/update', authController.authenticateJWT, extractFilePath, (req, res, next) => {
-//   const pathFromClient = req.file_path || 'default';
-
-//   // Step 2: Use multer with dynamic path
-//   const upload = createMulterUpload(pathFromClient).single('image');
-//   upload(req, res, function (err) {
-//     if (err) {
-//       return res.status(400).json({ success: false, message: err.message });
-//     }
-//     next();
-//   });
-// }, authController.updateUser);
+router.get('/admin-user-list', authController.authenticateJWT, userController.getAllUsers)
+router.get('/admin-posts-list', authController.authenticateJWT, postController.getAllPosts)
 
 
 module.exports = router;

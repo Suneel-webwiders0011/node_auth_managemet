@@ -59,7 +59,8 @@
      */
     exports.getAllUsers = async (req, res) => {
         try {
-            const users = await userService.getAllUsers();
+            const user_type = 'customer';
+            const users = await userService.getAllUsers(user_type);
             // res.json({ users });
             return customResponse.success(res, { users });
         } catch (error) {
