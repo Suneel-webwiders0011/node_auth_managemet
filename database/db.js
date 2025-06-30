@@ -37,6 +37,8 @@ db.Posts = require('../models/posts')(sequelize, Sequelize.DataTypes);
 db.Comment = require('../models/Comment')(sequelize, Sequelize.DataTypes);
 db.Plans = require('../models/plan')(sequelize, Sequelize.DataTypes);
 db.PlanPurchases = require('../models/planpurchase')(sequelize, Sequelize.DataTypes);
+db.Category = require('../models/category')(sequelize, Sequelize.DataTypes);
+db.Product = require('../models/product')(sequelize, Sequelize.DataTypes);
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
